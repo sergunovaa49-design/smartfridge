@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="uk" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartFridge — Розумний контроль продуктів та AI-рецепти</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            dark: '#0f172a'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 4s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 8s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-12px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(16, 185, 129, 0.15);
+        }
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hero-glow {
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(255, 255, 255, 0) 70%);
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #10b981;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="font-sans bg-slate-50 text-slate-800 selection:bg-brand-500 selection:text-white antialiased overflow-x-hidden">
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-32 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-slate-900 text-white px-5 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 border border-emerald-500/30">
+            <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <div>
+                <h4 id="toast-title" class="font-bold text-sm">Успіх!</h4>
+                <p id="toast-message" class="text-xs text-slate-300">Ваша дія успішно виконана.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER / NAVIGATION -->
+    <header class="fixed top-0 left-0 right-0 z-40 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="glass-card rounded-3xl px-5 py-3 shadow-sm flex items-center justify-between">
+                <!-- Logo -->
+                <a href="#" class="flex items-center space-x-3 group">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-teal-400 flex items-center justify-center text-white text-xl font-black shadow-lg shadow-brand-500/30 group-hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-snowflake"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xl font-extrabold tracking-tight text-slate-900">Smart<span class="text-brand-600">Fridge</span></span>
+                        <span class="text-[10px] uppercase font-bold tracking-widest text-emerald-600 -mt-1">Eco FoodTech</span>
+                    </div>
+                </a>
+
+                <!-- Nav Links Desktop -->
+                <nav class="hidden md:flex items-center space-x-8 text-sm font-semibold text-slate-600">
+                    <a href="#features" class="hover:text-brand-600 transition-colors">Можливості</a>
+                    <a href="#how-it-works" class="hover:text-brand-600 transition-colors">Як це працює</a>
+                    <a href="#ai-demo" class="hover:text-brand-600 transition-colors flex items-center gap-1.5">
+                        <span class="relative flex h-2 w-2">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        AI-демо
+                    </a>
+                    <a href="#pricing" class="hover:text-brand-600 transition-colors">Тарифи</a>
+                    <a href="#faq" class="hover:text-brand-600 transition-colors">FAQ</a>
+                </nav>
+
+                <!-- Action Button -->
+                <div class="hidden sm:flex items-center space-x-3">
+                    <a href="#download" class="bg-gradient-to-r from-brand-600 to-teal-600 text-white px-5 py-2.5 rounded-2xl font-bold text-sm shadow-md shadow-brand-500/20 hover:shadow-lg hover:shadow-brand-500/40 hover:scale-[1.02] active:scale-95 transition-all">
+                        Завантажити
+                    </a>
+                </div>
+
+                <!-- Mobile menu toggle -->
+                <button id="mobile-menu-btn" class="md:hidden text-slate-700 p-2 rounded-lg focus:outline-none" aria-label="Меню">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Dropdown Menu -->
+        <div id="mobile-menu" class="hidden md:hidden max-w-7xl mx-auto px-4 sm:px-6 pt-2 pb-4">
+            <div class="glass-card rounded-2xl p-5 space-y-4 shadow-xl flex flex-col font-medium text-slate-700">
+                <a href="#features" class="mobile-link hover:text-brand-600 py-1">Можливості</a>
+                <a href="#how-it-works" class="mobile-link hover:text-brand-600 py-1">Як це працює</a>
+                <a href="#ai-demo" class="mobile-link hover:text-brand-600 py-1 text-emerald-600 font-bold">AI-демо рецептів</a>
+                <a href="#pricing" class="mobile-link hover:text-brand-600 py-1">Тарифи</a>
+                <a href="#faq" class="mobile-link hover:text-brand-600 py-1">FAQ</a>
+                <hr class="border-slate-200 my-2">
+                <a href="#download" class="mobile-link bg-brand-600 text-white text-center py-2.5 rounded-xl font-bold">Завантажити застосунок</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden">
+        <!-- Background Elements -->
+        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] hero-glow rounded-full blur-3xl -z-10 pointer-events-none"></div>
+        <div class="absolute top-10 right-10 text-emerald-200/40 text-9xl font-black select-none pointer-events-none -z-10">AI</div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+                
+                <!-- Hero Text -->
+                <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                    <div class="inline-flex items-center gap-2 bg-emerald-100/80 text-emerald-800 border border-emerald-300/50 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide uppercase shadow-sm">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Штучний Інтелект для Вашої Кухні 2.0
+                    </div>
+
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.15]">
+                        Твій холодильник під контролем. <br class="hidden sm:inline">
+                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-600 via-teal-600 to-emerald-500">
+                            Нуль викинутих продуктів.
+                        </span>
+                    </h1>
+
+                    <p class="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto lg:mx-0 font-normal leading-relaxed">
+                        <strong>SmartFridge</strong> відстежує терміни придатності, сканує чеки за секунду та пропонує шедеври від AI-шефа з інгредієнтів, які вже є вдома. Економ до 3 500 грн щомісяця!
+                    </p>
+
+                    <!-- App Badges + Action Buttons -->
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
+                        <a href="#download" onclick="showToast('Завантаження', 'Посилання на завантаження відправлено!')" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-6 py-3.5 rounded-2xl flex items-center justify-center space-x-3 shadow-xl transition-all hover:-translate-y-0.5">
+                            <i class="fa-brands fa-apple text-3xl"></i>
+                            <div class="text-left">
+                                <div class="text-[10px] uppercase tracking-wider text-slate-400">Завантажити в</div>
+                                <div class="text-sm font-bold -mt-0.5">App Store</div>
+                            </div>
+                        </a>
+
+                        <a href="#download" onclick="showToast('Завантаження', 'Перехід до Google Play!')" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-6 py-3.5 rounded-2xl flex items-center justify-center space-x-3 shadow-xl transition-all hover:-translate-y-0.5">
+                            <i class="fa-brands fa-google-play text-2xl text-emerald-400"></i>
+                            <div class="text-left">
+                                <div class="text-[10px] uppercase tracking-wider text-slate-400">Завантажити в</div>
+                                <div class="text-sm font-bold -mt-0.5">Google Play</div>
+                            </div>
+                        </a>
+
+                        <a href="#ai-demo" class="w-full sm:w-auto bg-emerald-50 hover:bg-emerald-100 text-brand-700 border border-brand-200 px-6 py-3.5 rounded-2xl flex items-center justify-center space-x-2 font-bold text-sm transition-all">
+                            <i class="fa-solid fa-wand-magic-sparkles text-brand-600"></i>
+                            <span>Спробувати AI-демо</span>
+                        </a>
+                    </div>
+
+                    <!-- Trust indicators -->
+                    <div class="pt-6 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-slate-500 text-xs font-semibold">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-star text-amber-400"></i>
+                            <span>Оцінка 4.9/5 в App Store</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-users text-brand-600"></i>
+                            <span>45,000+ активних користувачів</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-leaf text-emerald-500"></i>
+                            <span>12 тон їжі збережено</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Interactive App Mockup -->
+                <div class="lg:col-span-5 flex justify-center">
+                    <div class="relative w-full max-w-[340px] sm:max-w-[380px] animate-float">
+                        
+                        <!-- Phone Frame -->
+                        <div class="relative bg-slate-900 p-4 rounded-[48px] shadow-2xl border-4 border-slate-800 shadow-brand-500/20">
+                            
+                            <!-- Dynamic Island / Notch -->
+                            <div class="absolute top-7 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-30 flex items-center justify-end px-2">
+                                <div class="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
+                            </div>
+
+                            <!-- Screen Container -->
+                            <div class="bg-slate-900 rounded-[38px] overflow-hidden border border-slate-800 text-white pt-8 pb-4 px-4 min-h-[580px] flex flex-col">
+                                
+                                <!-- App Header Inside Phone -->
+                                <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+                                    <div>
+                                        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Мій холодильник</p>
+                                        <h3 class="text-base font-bold text-white flex items-center gap-1.5">
+                                            Кухня (Квартира) <i class="fa-solid fa-chevron-down text-xs text-brand-500"></i>
+                                        </h3>
+                                    </div>
+                                    <button class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs text-brand-400">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+
+                                <!-- App Search / Filter inside phone -->
+                                <div class="my-3 flex items-center justify-between text-xs bg-slate-800/60 p-2 rounded-xl">
+                                    <span class="text-slate-400 flex items-center gap-1.5"><i class="fa-solid fa-magnifying-glass text-slate-500"></i> Пошук продуктів...</span>
+                                    <span class="bg-brand-500/20 text-brand-400 text-[10px] px-2 py-0.5 rounded-full font-bold">14 інгр.</span>
+                                </div>
+
+                                <!-- Food List Items -->
+                                <div class="space-y-2.5 flex-1 overflow-y-auto pr-1">
+                                    
+                                    <!-- Critical Expiring (Red) -->
+                                    <div class="bg-slate-800/80 p-2.5 rounded-2xl flex items-center justify-between border border-red-500/30">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center text-lg">
+                                                🥛
+                                            </div>
+                                            <div>
+                                                <h4 class="text-xs font-bold text-white">Молоко 2.5%</h4>
+                                                <p class="text-[10px] text-red-400 font-semibold flex items-center gap-1">
+                                                    <i class="fa-solid fa-clock"></i> Зіпсується завтра
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span class="text-xs font-extrabold text-red-400 bg-red-500/10 px-2 py-1 rounded-lg">1 д.</span>
+                                    </div>
+
+                                    <!-- Warning Expiring (Yellow) -->
+                                    <div class="bg-slate-800/80 p-2.5 rounded-2xl flex items-center justify-between border border-amber-500/30">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
+                                                🥗
+                                            </div>
+                                            <div>
+                                                <h4 class="text-xs font-bold text-white">Шпинат свіжий</h4>
+                                                <p class="text-[10px] text-amber-400 font-semibold flex items-center gap-1">
+                                                    <i class="fa-solid fa-triangle-exclamation"></i> Залишилось 2 дні
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span class="text-xs font-extrabold text-amber-400 bg-amber-500/10 px-2 py-1 rounded-lg">2 д.</span>
+                                    </div>
+
+                                    <!-- Fresh Items (Green) -->
+                                    <div class="bg-slate-800/80 p-2.5 rounded-2xl flex items-center justify-between border border-emerald-500/20">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
+                                                🍗
+                                            </div>
+                                            <div>
+                                                <h4 class="text-xs font-bold text-white">Куряче філе</h4>
+                                                <p class="text-[10px] text-emerald-400 font-semibold">Свіже</p>
+                                            </div>
+                                        </div>
+                                        <span class="text-xs font-extrabold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg">5 д.</span>
+                                    </div>
+
+                                    <div class="bg-slate-800/80 p-2.5 rounded-2xl flex items-center justify-between border border-emerald-500/20">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
+                                                🧀
+                                            </div>
+                                            <div>
+                                                <h4 class="text-xs font-bold text-white">Сир Пармезан</h4>
+                                                <p class="text-[10px] text-emerald-400 font-semibold">Свіжий</p>
+                                            </div>
+                                        </div>
+                                        <span class="text-xs font-extrabold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg">12 д.</span>
+                                    </div>
+                                </div>
+
+                                <!-- AI Action Prompt Card in Phone -->
+                                <div class="mt-3 p-3 bg-gradient-to-br from-brand-900 to-slate-900 rounded-2xl border border-brand-500/40 text-center shadow-lg">
+                                    <p class="text-[11px] text-emerald-300 font-medium mb-2">
+                                        💡 <span class="font-bold">Виявлено 2 продукти</span>, які скоро зіпсуються!
+                                    </p>
+                                    <a href="#ai-demo" class="block w-full py-2 bg-gradient-to-r from-brand-500 to-teal-500 hover:from-brand-600 hover:to-teal-600 text-white font-bold text-xs rounded-xl shadow-md transition-all">
+                                        ✨ Згенерувати AI-рецепт
+                                    </a>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Floating Badges outside mockup -->
+                        <div class="absolute -bottom-6 -left-6 bg-white text-slate-900 p-3 rounded-2xl shadow-xl border border-slate-100 flex items-center space-x-3 animate-bounce" style="animation-duration: 3s;">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xl">
+                                <i class="fa-solid fa-piggy-bank"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-slate-500 uppercase font-bold">Заощаджено</p>
+                                <p class="text-sm font-extrabold text-brand-600">+3,450 ₴/міс</p>
+                            </div>
+                        </div>
+
+                        <div class="absolute -top-4 -right-4 bg-slate-900 text-white p-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-robot"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-slate-400 uppercase font-bold">AI Шеф</p>
+                                <p class="text-xs font-bold text-emerald-400">Рецепт готовий!</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS / PROBLEM & SOLUTION -->
+    <section class="py-12 bg-white border-y border-slate-200/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                
+                <div class="space-y-1">
+                    <div class="text-3xl sm:text-4xl font-black text-brand-600 flex justify-center items-center gap-1">
+                        <span>30</span><span class="text-2xl">%</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-600 font-semibold">Продуктів зазвичай викидається</p>
+                </div>
+
+                <div class="space-y-1">
+                    <div class="text-3xl sm:text-4xl font-black text-slate-900 flex justify-center items-center">
+                        ~3 500 <span class="text-brand-600 ml-1">₴</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-600 font-semibold">Середня економія родини на місяць</p>
+                </div>
+
+                <div class="space-y-1">
+                    <div class="text-3xl sm:text-4xl font-black text-brand-600 flex justify-center items-center">
+                        < 5 <span class="text-xl ml-1 text-slate-700">сек</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-600 font-semibold">Час сканування чека супермаркету</p>
+                </div>
+
+                <div class="space-y-1">
+                    <div class="text-3xl sm:text-4xl font-black text-slate-900 flex justify-center items-center">
+                        10 000+
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-600 font-semibold">Варіантів AI-рецептів у базі</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section id="features" class="py-24 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                <h2 class="text-xs font-extrabold uppercase tracking-widest text-brand-600">Сучасний FoodTech інструмент</h2>
+                <p class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                    Все необхідне для розумного управління кухнею
+                </p>
+                <p class="text-slate-600 text-base">
+                    Забудь про забутий у кутку холодильника сир та змарновані гроші. SmartFridge бере турботу про свіжість на себе.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Feature 1 -->
+                <div class="glass-card p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-brand-300 group">
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-brand-600 flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 group-hover:bg-brand-600 group-hover:text-white transition-all">
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Розумне сканування чеків</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        Сфотографуй чек із Сільпо, АТБ чи Новусу — застосунок розпізнає продукти, розрахує приблизний термін придатності та автоматично додасть у холодильник.
+                    </p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="glass-card p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-brand-300 group">
+                    <div class="w-14 h-14 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition-all">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Трекер термінів & Push-сповіщення</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        Отримуй вчасні сповіщення перед тим, як продукт зіпсується. Зелений, жовний та червоний індикатори покажуть стан свіжості.
+                    </p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="glass-card p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-brand-300 group">
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-brand-600 flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 group-hover:bg-brand-600 group-hover:text-white transition-all">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">AI-Шеф кухар</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        Штучний інтелект підбирає страви саме з тих продуктів, які вимагають першочергового використання, зважаючи на ваші вподобання та час.
+                    </p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="glass-card p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-brand-300 group">
+                    <div class="w-14 h-14 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition-all">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Розумний список покупок</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        Список покупок формується автоматично на основі того, що закінчилося, або інгредієнтів, яких не вистачає для обраного рецепта.
+                    </p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="glass-card p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-brand-300 group">
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-brand-600 flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 group-hover:bg-brand-600 group-hover:text-white transition-all">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Сімейний доступ</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        Синхронізуйте холодильник з іншими членами родини. Усі знають, що вже є вдома, і ніхто не купить третю упаковку молока поспіль.
+                    </p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="glass-card p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-brand-300 group">
+                    <div class="w-14 h-14 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center text-2xl font-bold mb-6 group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition-all">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Аналітика економії</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        Відстежуй, скільки грошей вдалося зберегти за місяць, скільки кілограмів продуктів було врятовано та твій особистий еко-вплив.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS (3 STEPS) -->
+    <section id="how-it-works" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
+                <h2 class="text-xs font-extrabold uppercase tracking-widest text-brand-600">Просто та зручно</h2>
+                <p class="text-3xl sm:text-4xl font-extrabold text-slate-900">Як SmartFridge змінює ваше життя у 3 кроки</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+                
+                <!-- Step 1 -->
+                <div class="relative bg-slate-50 p-8 rounded-3xl border border-slate-200/60 flex flex-col items-center text-center">
+                    <div class="w-12 h-12 rounded-full bg-brand-600 text-white font-extrabold text-xl flex items-center justify-center mb-6 shadow-lg shadow-brand-500/30">
+                        1
+                    </div>
+                    <div class="text-4xl mb-4">📸</div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">Відскануй чек або продукти</h3>
+                    <p class="text-slate-600 text-sm">
+                        Після покупки просто сфотографуй чек або штрих-коди. Застосунок сам внесе назви та розрахує дати.
+                    </p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="relative bg-slate-50 p-8 rounded-3xl border border-slate-200/60 flex flex-col items-center text-center">
+                    <div class="w-12 h-12 rounded-full bg-brand-600 text-white font-extrabold text-xl flex items-center justify-center mb-6 shadow-lg shadow-brand-500/30">
+                        2
+                    </div>
+                    <div class="text-4xl mb-4">🔔</div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">Отримуй розумні нагадування</h3>
+                    <p class="text-slate-600 text-sm">
+                        SmartFridge завчасно нагадає про товари, у яких добігає кінця термін придатності, щоб ви встигли їх використати.
+                    </p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="relative bg-slate-50 p-8 rounded-3xl border border-slate-200/60 flex flex-col items-center text-center">
+                    <div class="w-12 h-12 rounded-full bg-brand-600 text-white font-extrabold text-xl flex items-center justify-center mb-6 shadow-lg shadow-brand-500/30">
+                        3
+                    </div>
+                    <div class="text-4xl mb-4">👨‍🍳</div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">Готуй за AI-рецептами</h3>
+                    <p class="text-slate-600 text-sm">
+                        Натисни одну кнопку — і отримаєш смачні, збалансовані рецепти саме з тих інгредієнтів, що вже є на полицях.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- INTERACTIVE AI RECIPE SIMULATOR -->
+    <section id="ai-demo" class="py-24 bg-gradient-to-b from-slate-900 to-slate-950 text-white relative overflow-hidden">
+        <!-- Decorative Glows -->
+        <div class="absolute top-0 right-0 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            
+            <div class="text-center max-w-3xl mx-auto mb-12 space-y-4">
+                <div class="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+                    <i class="fa-solid fa-sparkles"></i> Інтерактивне Демо
+                </div>
+                <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+                    Перевір роботу AI-Шефа просто зараз!
+                </h2>
+                <p class="text-slate-400 text-base">
+                    Обери інгредієнти, які умовно є у твоєму холодильнику, або додай власні — та згенеруй ідеальний рецепт.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Left: Ingredient Selector -->
+                <div class="lg:col-span-5 glass-dark p-6 sm:p-8 rounded-3xl space-y-6">
+                    
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-basket-shopping text-emerald-400"></i>
+                            Продукти в наявності
+                        </h3>
+                        <button id="clear-ingredients" class="text-xs text-slate-400 hover:text-red-400 transition-colors">
+                            Очистити все
+                        </button>
+                    </div>
+
+                    <!-- Add custom ingredient input -->
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="custom-ingredient-input" placeholder="Додати свій продукт (напр. Бекон)..." class="flex-1 bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 text-xs sm:text-sm rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-emerald-500 transition-colors">
+                        <button id="add-custom-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all">
+                            + Додати
+                        </button>
+                    </div>
+
+                    <!-- Category Toggles / Chips -->
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">🥩 Білки та молочне</p>
+                            <div class="flex flex-wrap gap-2" id="protein-chips">
+                                <!-- Chips dynamically inserted or static -->
+                                <button data-name="Куряче філе" data-emoji="🍗" class="ing-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-emerald-500/50 transition-all">🍗 Куряче філе</button>
+                                <button data-name="Яйця" data-emoji="🥚" class="ing-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-emerald-500/50 transition-all">🥚 Яйця</button>
+                                <button data-name="Вершки 20%" data-emoji="🥛" class="ing-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-emerald-500/50 transition-all">🥛 Вершки 20%</button>
+                                <button data-name="Сир Моцарела" data-emoji="🧀" class="ing-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-emerald-500/50 transition-all">🧀 Сир Моцарела</button>
+                                <button data-name="Лосось" data-emoji="🐟" class="ing-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-emerald-500/50 transition-all">🐟 Лосось</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">🥬 Овочі та зелень</p>
+                            <div class="flex flex-wrap gap-2" id="veggie-chips">
+                                <button data-name="Шпинат" data-emoji="🥬" class="ing-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-emerald-500/50 transition-all">🥬 Шпинат</button>
+                                <button data-name="Помідори" data-emoji="🍅" class="ing-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-emerald-500/50 transition-all">🍅 Помідори</button>
+                                <button data-name="Гриби печериці" data-emoji="🍄" class="ing-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-emerald-500/50 transition-all">🍄 Гриби печериці</button>
+                                <button data-name="Авокадо" data-emoji="🥑" class="ing-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-emerald-500/50 transition-all">🥑 Авокадо</button>
+                                <button data-name="Часник" data-emoji="🧄" class="ing-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-emerald-500/50 transition-all">🧄 Часник</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">🍝 Бакалія & Основа</p>
+                            <div class="flex flex-wrap gap-2" id="carbs-chips">
+                                <button data-name="Макарони Паста" data-emoji="🍝" class="ing-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-emerald-500/50 transition-all">🍝 Макарони</button>
+                                <button data-name="Рис" data-emoji="🍚" class="ing-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-emerald-500/50 transition-all">🍚 Рис</button>
+                                <button data-name="Оливкова олія" data-emoji="🫒" class="ing-chip px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-emerald-500/50 transition-all">🫒 Оливкова олія</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom added items list -->
+                    <div id="selected-list-container" class="pt-2 border-t border-slate-800">
+                        <p class="text-xs font-medium text-slate-400 mb-2">Обрано інгредієнтів: <span id="selected-count" class="text-emerald-400 font-bold">0</span></p>
+                        <div id="selected-chips-box" class="flex flex-wrap gap-1.5 min-h-[36px] p-2 bg-slate-900/60 rounded-xl border border-slate-800 text-xs text-slate-400 italic">
+                            Натисніть на продукти вище, щоб додати...
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button id="generate-recipe-btn" class="w-full bg-gradient-to-r from-brand-500 via-teal-500 to-emerald-500 hover:from-brand-600 hover:to-teal-600 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-lg shadow-brand-500/25 flex items-center justify-center space-x-2 transition-all hover:scale-[1.01] active:scale-95">
+                        <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+                        <span>Згенерувати AI-рецепт</span>
+                    </button>
+                </div>
+
+                <!-- Right: Generated Recipe Card -->
+                <div class="lg:col-span-7">
+                    <div id="recipe-output" class="glass-dark p-6 sm:p-8 rounded-3xl min-h-[480px] flex flex-col justify-between border border-emerald-500/20 relative">
+                        
+                        <!-- Initial Placeholder State -->
+                        <div id="recipe-placeholder" class="my-auto text-center py-12 space-y-4">
+                            <div class="w-20 h-20 mx-auto rounded-3xl bg-slate-800/80 border border-slate-700 flex items-center justify-center text-4xl text-emerald-400 animate-pulse">
+                                🍳
+                            </div>
+                            <h3 class="text-xl font-bold text-white">Готові до кулінарної магії?</h3>
+                            <p class="text-slate-400 text-sm max-w-md mx-auto">
+                                Оберіть принаймні 2 інгредієнти з панелі ліворуч та натисніть «Згенерувати AI-рецепт». Штучний інтелект підбере смачну страву!
+                            </p>
+                        </div>
+
+                        <!-- Loading State (hidden initially) -->
+                        <div id="recipe-loading" class="hidden my-auto text-center py-16 space-y-5">
+                            <div class="relative w-16 h-16 mx-auto">
+                                <div class="w-16 h-16 rounded-full border-4 border-slate-700 border-t-emerald-400 animate-spin"></div>
+                                <div class="absolute inset-0 flex items-center justify-center text-xl">✨</div>
+                            </div>
+                            <div>
+                                <h4 id="loading-status-text" class="text-lg font-bold text-white">Аналізуємо продукти...</h4>
+                                <p class="text-slate-400 text-xs">AI-шеф шукає найкращі пропорції та рецепт</p>
+                            </div>
+                        </div>
+
+                        <!-- Generated Content Container (hidden initially) -->
+                        <div id="recipe-content" class="hidden space-y-6">
+                            
+                            <!-- Recipe Header -->
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                                <div>
+                                    <div class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20 mb-2">
+                                        <i class="fa-solid fa-leaf"></i> Врятовано від псування: <span id="saved-count-tag" class="text-white">2 продукти</span>
+                                    </div>
+                                    <h3 id="recipe-title" class="text-2xl sm:text-3xl font-extrabold text-white">
+                                        Вершкова паста зі шпинатом та куркою
+                                    </h3>
+                                </div>
+                                <div class="flex items-center gap-3 text-xs">
+                                    <div class="bg-slate-800 px-3 py-2 rounded-xl border border-slate-700 text-center">
+                                        <span class="block text-slate-400 text-[10px] uppercase font-bold">Час</span>
+                                        <span id="recipe-time" class="font-bold text-emerald-400 text-sm">20 хв</span>
+                                    </div>
+                                    <div class="bg-slate-800 px-3 py-2 rounded-xl border border-slate-700 text-center">
+                                        <span class="block text-slate-400 text-[10px] uppercase font-bold">Калорії</span>
+                                        <span id="recipe-cals" class="font-bold text-amber-400 text-sm">480 ккал</span>
+                                    </div>
+                                    <div class="bg-slate-800 px-3 py-2 rounded-xl border border-slate-700 text-center">
+                                        <span class="block text-slate-400 text-[10px] uppercase font-bold">Складність</span>
+                                        <span id="recipe-diff" class="font-bold text-blue-400 text-sm">Легко</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Used Ingredients Badges -->
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Використано з вашого холодильника:</h4>
+                                <div id="recipe-used-ing" class="flex flex-wrap gap-2">
+                                    <!-- Dynamic Used Badges -->
+                                </div>
+                            </div>
+
+                            <!-- Step by step instructions -->
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Покрокове приготування:</h4>
+                                <ol id="recipe-steps" class="space-y-3 text-sm text-slate-300">
+                                    <!-- Dynamic Steps -->
+                                </ol>
+                            </div>
+
+                            <!-- Save / Action -->
+                            <div class="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4">
+                                <p class="text-xs text-slate-400">
+                                    💡 <em>Підказка: У застосунку можна зберігати улюблені AI-рецепти в 1 клік!</em>
+                                </p>
+                                <button onclick="showToast('Збережено', 'Рецепт додано у ваші улюблені!')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl border border-slate-700 flex items-center gap-2 transition-all">
+                                    <i class="fa-regular fa-bookmark"></i> Зберегти рецепт
+                                </button>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- PRICING SECTION -->
+    <section id="pricing" class="py-24 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center max-w-3xl mx-auto mb-12 space-y-4">
+                <h2 class="text-xs font-extrabold uppercase tracking-widest text-brand-600">Прості та прозорі тарифи</h2>
+                <p class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                    Обирай тариф, який підходить саме тобі
+                </p>
+                <p class="text-slate-600 text-base">
+                    Почни безкоштовно та розкривай весь потенціал штучного інтелекту для економії сімейного бюджету.
+                </p>
+
+                <!-- Billing Toggle -->
+                <div class="pt-4 flex items-center justify-center space-x-4">
+                    <span id="label-monthly" class="text-sm font-bold text-slate-900">Щомісячно</span>
+                    <button id="billing-toggle" class="relative w-14 h-8 bg-brand-600 rounded-full p-1 transition-colors focus:outline-none">
+                        <div id="billing-dot" class="w-6 h-6 bg-white rounded-full shadow-md transform transition-transform translate-x-0"></div>
+                    </button>
+                    <span id="label-yearly" class="text-sm font-bold text-slate-500 flex items-center gap-1.5">
+                        Щорічно 
+                        <span class="bg-emerald-100 text-brand-700 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">Знижка 25%</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Pricing Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto gap-8 items-stretch">
+                
+                <!-- Basic Free Plan -->
+                <div class="glass-card p-8 rounded-3xl flex flex-col justify-between border border-slate-200/80 hover:shadow-xl transition-all">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold text-slate-900">Basic (Базовий)</h3>
+                            <span class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1 rounded-full">Завжди 0 ₴</span>
+                        </div>
+                        <p class="text-slate-600 text-sm mb-6">Ідеально для ознайомлення з базовим контролем продуктів.</p>
+
+                        <div class="mb-6">
+                            <span class="text-4xl font-black text-slate-900">0 ₴</span>
+                            <span class="text-slate-500 text-sm font-medium">/ назавжди</span>
+                        </div>
+
+                        <ul class="space-y-3.5 text-sm text-slate-700 mb-8">
+                            <li class="flex items-center space-x-3">
+                                <i class="fa-solid fa-check text-emerald-500"></i>
+                                <span>Контроль до 20 продуктів одночасно</span>
+                            </li>
+                            <li class="flex items-center space-x-3">
+                                <i class="fa-solid fa-check text-emerald-500"></i>
+                                <span>Базові сповіщення про терміни</span>
+                            </li>
+                            <li class="flex items-center space-x-3">
+                                <i class="fa-solid fa-check text-emerald-500"></i>
+                                <span>3 AI-генерації рецептів на тиждень</span>
+                            </li>
+                            <li class="flex items-center space-x-3 text-slate-400 line-through">
+                                <i class="fa-solid fa-xmark"></i>
+                                <span>Сканування паперових чеків</span>
+                            </li>
+                            <li class="flex items-center space-x-3 text-slate-400 line-through">
+                                <i class="fa-solid fa-xmark"></i>
+                                <span>Сімейний доступ для декількох пристроїв</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <a href="#download" class="w-full text-center bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3.5 rounded-2xl transition-all">
+                        Спробувати безкоштовно
+                    </a>
+                </div>
+
+                <!-- Pro Plan -->
+                <div class="relative glass-card p-8 rounded-3xl flex flex-col justify-between border-2 border-brand-500 shadow-2xl shadow-brand-500/10 hover:shadow-brand-500/20 transition-all bg-white">
+                    
+                    <div class="absolute -top-4 right-8 bg-gradient-to-r from-brand-600 to-teal-600 text-white text-xs font-extrabold uppercase px-4 py-1.5 rounded-full shadow-md">
+                        Найпопулярніший 🔥
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold text-slate-900">SmartFridge Pro</h3>
+                            <span class="text-xs font-bold bg-emerald-100 text-brand-700 px-3 py-1 rounded-full">Повний доступ</span>
+                        </div>
+                        <p class="text-slate-600 text-sm mb-6">Максимальна економія та необмежений штучний інтелект.</p>
+
+                        <div class="mb-6">
+                            <span id="price-pro-val" class="text-4xl font-black text-slate-900">149 ₴</span>
+                            <span id="price-pro-period" class="text-slate-500 text-sm font-medium">/ місяць</span>
+                        </div>
+
+                        <ul class="space-y-3.5 text-sm text-slate-700 mb-8">
+                            <li class="flex items-center space-x-3">
+                                <i class="fa-solid fa-check text-emerald-500 font-bold"></i>
+                                <span class="font-medium">Безліміт продуктів у холодильнику</span>
+                            </li>
+                            <li class="flex items-center space-x-3">
+                                <i class="fa-solid fa-check text-emerald-500 font-bold"></i>
+                                <span class="font-medium">Необмежений AI-Шеф (генерація за секунд)</span>
+                            </li>
+                            <li class="flex items-center space-x-3">
+                                <i class="fa-solid fa-check text-emerald-500 font-bold"></i>
+                                <span class="font-medium">Сканування чеків будь-яких мереж супермаркетів</span>
+                            </li>
+                            <li class="flex items-center space-x-3">
+                                <i class="fa-solid fa-check text-emerald-500 font-bold"></i>
+                                <span class="font-medium">Сімейний доступ (до 5 користувачів)</span>
+                            </li>
+                            <li class="flex items-center space-x-3">
+                                <i class="fa-solid fa-check text-emerald-500 font-bold"></i>
+                                <span class="font-medium">Персоналізовані підказки щодо дієти й калорій</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <a href="#download" onclick="showToast('SmartFridge Pro', 'Дякуємо за вибір Pro-плану!')" class="w-full text-center bg-gradient-to-r from-brand-600 to-teal-600 hover:from-brand-700 hover:to-teal-700 text-white font-extrabold py-3.5 rounded-2xl shadow-lg shadow-brand-500/25 transition-all">
+                        Оформити Pro (7 днів тест 0 ₴)
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS & FAQ -->
+    <section id="faq" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- User Reviews Cards -->
+            <div class="mb-20">
+                <div class="text-center max-w-3xl mx-auto mb-12 space-y-3">
+                    <h2 class="text-xs font-extrabold uppercase tracking-widest text-brand-600">Відгуки користувачів</h2>
+                    <p class="text-3xl font-extrabold text-slate-900">Що кажуть люди, які вже економлять</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    
+                    <div class="bg-slate-50 p-6 rounded-3xl border border-slate-200/70 space-y-4">
+                        <div class="flex text-amber-400 text-sm">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-slate-700 text-sm leading-relaxed">
+                            «Раніше щотижня викидала зелень, куповану "про всяк випадок", та половину пачки сиру. SmartFridge підказав рецепт запеченого шпинату. Сервіс просто супер!»
+                        </p>
+                        <div class="flex items-center space-x-3 pt-2">
+                            <div class="w-10 h-10 rounded-full bg-emerald-200 text-emerald-800 font-bold flex items-center justify-center text-sm">ОК</div>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Олена Коваленко</h4>
+                                <p class="text-[10px] text-slate-500">Київ • Користується 4 місяці</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-6 rounded-3xl border border-slate-200/70 space-y-4">
+                        <div class="flex text-amber-400 text-sm">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-slate-700 text-sm leading-relaxed">
+                            «Сканер чеків — це магія. Прийшов з магазину, сфотографував чек, і все вже у телефоні. За місяць зекономили з дружиною майже 4000 грн!»
+                        </p>
+                        <div class="flex items-center space-x-3 pt-2">
+                            <div class="w-10 h-10 rounded-full bg-teal-200 text-teal-800 font-bold flex items-center justify-center text-sm">МП</div>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Максим Петренко</h4>
+                                <p class="text-[10px] text-slate-500">Львів • Користується 6 місяців</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-6 rounded-3xl border border-slate-200/70 space-y-4">
+                        <div class="flex text-amber-400 text-sm">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-slate-700 text-sm leading-relaxed">
+                            «AI-рецепти реально рятують увечері, коли немає сил думати "що ж приготувати". Задав те, що є в холодильнику — і за 15 хвилин вечеря готова!»
+                        </p>
+                        <div class="flex items-center space-x-3 pt-2">
+                            <div class="w-10 h-10 rounded-full bg-amber-200 text-amber-800 font-bold flex items-center justify-center text-sm">ЯВ</div>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Яна Василенко</h4>
+                                <p class="text-[10px] text-slate-500">Одеса • Користується 2 місяці</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- FAQ Accordion -->
+            <div class="max-w-3xl mx-auto">
+                <div class="text-center mb-10">
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Популярні запитання (FAQ)</h2>
+                </div>
+
+                <div class="space-y-4" id="faq-accordion">
+                    
+                    <div class="border border-slate-200 rounded-2xl overflow-hidden">
+                        <button class="faq-btn w-full px-6 py-4 text-left font-bold text-slate-900 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors">
+                            <span>Як саме застосунок розпізнає продукти з чека?</span>
+                            <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-200"></i>
+                        </button>
+                        <div class="faq-content hidden px-6 py-4 text-sm text-slate-600 bg-white border-t border-slate-100">
+                            Застосунок використовує комп'ютерне бачення та OCR-технологію. Ви робите фото чека будь-якої української мережі (Сільпо, АТБ, Novus, Varus тощо), а SmartFridge розпізнає позиції, відсіює непродовольчі товари та автоматично визначає орієнтовні терміни придатності.
+                        </div>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-2xl overflow-hidden">
+                        <button class="faq-btn w-full px-6 py-4 text-left font-bold text-slate-900 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors">
+                            <span>Чи можу я ділитися списком продуктів із родиною?</span>
+                            <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-200"></i>
+                        </button>
+                        <div class="faq-content hidden px-6 py-4 text-sm text-slate-600 bg-white border-t border-slate-100">
+                            Так! У версії SmartFridge Pro ви можете створити спільний сімейний профіль. Коли один із членів сім'ї купує продукти або готує страву, список синхронізується у всіх в режимі реального часу.
+                        </div>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-2xl overflow-hidden">
+                        <button class="faq-btn w-full px-6 py-4 text-left font-bold text-slate-900 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors">
+                            <span>Що робити, якщо штучний інтелект запропонує інгредієнт, якого в мене немає?</span>
+                            <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-200"></i>
+                        </button>
+                        <div class="faq-content hidden px-6 py-4 text-sm text-slate-600 bg-white border-t border-slate-100">
+                            Наш AI-Шеф налаштований так, щоб опиратися виключно на наявні у вас продукти. Якщо для рецепта потрібні базові спеції чи олія (які зазвичай є вдома), він вкаже це окремо або запропонує легку заміну.
+                        </div>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-2xl overflow-hidden">
+                        <button class="faq-btn w-full px-6 py-4 text-left font-bold text-slate-900 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors">
+                            <span>Чи є безкоштовний тестовий період для Pro-підписки?</span>
+                            <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-200"></i>
+                        </button>
+                        <div class="faq-content hidden px-6 py-4 text-sm text-slate-600 bg-white border-t border-slate-100">
+                            Так, кожен новий користувач отримує 7 днів безкоштовного тестового періоду SmartFridge Pro. Скасувати підписку можна в будь-який момент без додаткових комісій.
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- CALL TO ACTION (CTA) & EARLY ACCESS FORM -->
+    <section id="download" class="py-20 bg-gradient-to-br from-slate-900 via-slate-800 to-brand-950 text-white relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="glass-dark p-8 sm:p-12 rounded-3xl border border-emerald-500/30 text-center max-w-4xl mx-auto space-y-8 shadow-2xl">
+                
+                <div class="w-16 h-16 rounded-3xl bg-gradient-to-tr from-brand-500 to-teal-400 mx-auto flex items-center justify-center text-3xl text-white shadow-lg shadow-brand-500/40">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                </div>
+
+                <div class="space-y-3">
+                    <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                        Готові перестанути викидати їжу та гроші?
+                    </h2>
+                    <p class="text-slate-300 text-base max-w-2xl mx-auto">
+                        Завантажуйте **SmartFridge** сьогодні або підпишіться на ранній доступ до нових AI-функцій та отримуйте промокод на 1 місяць Pro у подарунок!
+                    </p>
+                </div>
+
+                <!-- Email Form -->
+                <form id="subscribe-form" class="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
+                    <input type="email" id="email-input" required placeholder="Введіть ваш Email..." class="w-full bg-slate-800/90 border border-slate-700 text-white placeholder-slate-400 px-4 py-3.5 rounded-2xl focus:outline-none focus:border-emerald-500 text-sm">
+                    <button type="submit" class="w-full sm:w-auto bg-gradient-to-r from-brand-500 to-teal-500 hover:from-brand-600 hover:to-teal-600 text-white font-bold px-6 py-3.5 rounded-2xl text-sm transition-all whitespace-nowrap shadow-md">
+                        Отримати доступ 🚀
+                    </button>
+                </form>
+
+                <p class="text-[11px] text-slate-400">
+                    🔒 Без спаму. Ви можете відписатися в будь-який момент.
+                </p>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 text-slate-400 py-12 border-t border-slate-800 text-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-12 border-b border-slate-800">
+                
+                <!-- Col 1: Brand info -->
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-xl bg-brand-600 flex items-center justify-center text-white font-black text-sm">
+                            <i class="fa-solid fa-snowflake"></i>
+                        </div>
+                        <span class="text-lg font-extrabold text-white">Smart<span class="text-brand-500">Fridge</span></span>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Український FoodTech стартап. Розумний помічник для зменшення харчових відходів та планування раціону за допомогою штучного інтелекту.
+                    </p>
+                </div>
+
+                <!-- Col 2: Navigation -->
+                <div>
+                    <h4 class="text-white font-bold text-xs uppercase tracking-wider mb-4">Навігація</h4>
+                    <ul class="space-y-2 text-xs">
+                        <li><a href="#features" class="hover:text-emerald-400 transition-colors">Можливості</a></li>
+                        <li><a href="#how-it-works" class="hover:text-emerald-400 transition-colors">Як це працює</a></li>
+                        <li><a href="#ai-demo" class="hover:text-emerald-400 transition-colors">AI-Симулятор</a></li>
+                        <li><a href="#pricing" class="hover:text-emerald-400 transition-colors">Тарифи</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Legal & Support -->
+                <div>
+                    <h4 class="text-white font-bold text-xs uppercase tracking-wider mb-4">Підтримка</h4>
+                    <ul class="space-y-2 text-xs">
+                        <li><a href="#" class="hover:text-emerald-400 transition-colors">Політика конфіденційності</a></li>
+                        <li><a href="#" class="hover:text-emerald-400 transition-colors">Умови використання</a></li>
+                        <li><a href="#faq" class="hover:text-emerald-400 transition-colors">Часті запитання</a></li>
+                        <li><a href="mailto:support@smartfridge.app" class="hover:text-emerald-400 transition-colors">support@smartfridge.app</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 4: Socials -->
+                <div>
+                    <h4 class="text-white font-bold text-xs uppercase tracking-wider mb-4">Ми в соцмережах</h4>
+                    <div class="flex space-x-3 text-lg">
+                        <a href="#" class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-brand-600 hover:text-white transition-all"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-brand-600 hover:text-white transition-all"><i class="fa-brands fa-telegram"></i></a>
+                        <a href="#" class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-brand-600 hover:text-white transition-all"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#" class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-brand-600 hover:text-white transition-all"><i class="fa-brands fa-linkedin"></i></a>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
+                <p>© 2026 SmartFridge Startup Inc. Всі права захищено.</p>
+                <p class="mt-2 sm:mt-0">Зроблено з любов'ю та турботою про довкілля 🌱</p>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- JAVASCRIPT FOR INTERACTIVITY & AI SIMULATION -->
+    <script>
+        // State for Selected Ingredients in AI Demo
+        let selectedIngredients = [];
+
+        // Preset AI recipe database for interactive simulation
+        const recipeDatabase = [
+            {
+                title: "Вершкова паста зі шпинатом та куркою",
+                time: "20 хв",
+                cals: "490 ккал",
+                difficulty: "Легко",
+                required: ["Куряче філе", "Шпинат", "Макарони Паста", "Вершки 20%"],
+                steps: [
+                    "Обсмажте куряче філе, нарізане кубиками, на середньому вогні 7-8 хвилин до золотавої скоринки.",
+                    "Відваріть макарони у підсоленій воді до стану al dente.",
+                    "Додайте до курки свіжий шпинат та влийте вершки 20%. Потушіть 3 хвилини.",
+                    "Змішайте пасту з вершково-шпинатним соусом, додайте дрібку солі та поперчіть за смаком."
+                ]
+            },
+            {
+                title: "Омлет із грибами, моцарелою та авокадо",
+                time: "12 хв",
+                cals: "380 ккал",
+                difficulty: "Дуже легко",
+                required: ["Яйця", "Гриби печериці", "Сир Моцарела", "Авокадо"],
+                steps: [
+                    "Наріжте печериці скибочками та обсмажте на пательні 4 хвилини.",
+                    "Збийте яйця виделкою із дрібкою солі та залийте гриби.",
+                    "Посипте тертою моцарелою та накрийте кришкою на 3 хвилини.",
+                    "Подавайте із нарізаними скибочками свіжого авокадо."
+                ]
+            },
+            {
+                title: "Запечений лосось із шпинатом та помідорами",
+                time: "25 хв",
+                cals: "520 ккал",
+                difficulty: "Середня",
+                required: ["Лосось", "Помідори", "Шпинат", "Оливкова олія"],
+                steps: [
+                    "Викладіть філе лосося у форму для запікання, збризніть оливковою олією та скропіть лимонним соком.",
+                    "Навколо розкладіть помідори черрі та подушку зі свіжого шпинату.",
+                    "Запікайте при температурі 190°C протягом 18-20 хвилин.",
+                    "Подавайте гарячим разом із запеченими овочами."
+                ]
+            },
+            {
+                title: "Смажений рис по-азійськи з курятиною та яйцем",
+                time: "15 хв",
+                cals: "440 ккал",
+                difficulty: "Легко",
+                required: ["Рис", "Куряче філе", "Яйця", "Часник"],
+                steps: [
+                    "Розігрійте пательню з оливковою олією та подрібненим часником.",
+                    "Додайте дрібно нарізане куряче філе та обсмажте до готовності.",
+                    "Зсуньте курку набік, збийте 1 яйце прямо на пательню та швидко перемішайте.",
+                    "Додайте відварений рис, перемішайте все разом і прогрійте 3 хвилини."
+                ]
+            }
+        ];
+
+        // Toast Notification Helper
+        function showToast(title, message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-title').innerText = title;
+            document.getElementById('toast-message').innerText = message;
+
+            toast.classList.remove('translate-y-32', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-32', 'opacity-0', 'pointer-events-none');
+            }, 3500);
+        }
+
+        // Mobile Menu Toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+
+        document.querySelectorAll('.mobile-link').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('mobile-menu').classList.add('hidden');
+            });
+        });
+
+        // FAQ Accordion Toggle
+        document.querySelectorAll('.faq-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const content = btn.nextElementSibling;
+                const icon = btn.querySelector('i');
+
+                // Toggle visibility
+                content.classList.toggle('hidden');
+                icon.classList.toggle('rotate-180');
+            });
+        });
+
+        // Billing Pricing Switcher Toggle
+        let isYearly = false;
+        const billingToggle = document.getElementById('billing-toggle');
+        const billingDot = document.getElementById('billing-dot');
+        const priceProVal = document.getElementById('price-pro-val');
+        const priceProPeriod = document.getElementById('price-pro-period');
+        const labelMonthly = document.getElementById('label-monthly');
+        const labelYearly = document.getElementById('label-yearly');
+
+        billingToggle.addEventListener('click', () => {
+            isYearly = !isYearly;
+            if (isYearly) {
+                billingDot.classList.add('translate-x-6');
+                priceProVal.innerText = '109 ₴';
+                priceProPeriod.innerText = '/ місяць (при оплаті 1 308 ₴/рік)';
+                labelMonthly.classList.replace('text-slate-900', 'text-slate-500');
+                labelYearly.classList.replace('text-slate-500', 'text-slate-900');
+            } else {
+                billingDot.classList.remove('translate-x-6');
+                priceProVal.innerText = '149 ₴';
+                priceProPeriod.innerText = '/ місяць';
+                labelMonthly.classList.replace('text-slate-500', 'text-slate-900');
+                labelYearly.classList.replace('text-slate-900', 'text-slate-500');
+            }
+        });
+
+        // AI DEMO: Ingredient Chip Click Handlers
+        const allIngChips = document.querySelectorAll('.ing-chip');
+        const selectedChipsBox = document.getElementById('selected-chips-box');
+        const selectedCountEl = document.getElementById('selected-count');
+
+        allIngChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                const name = chip.getAttribute('data-name');
+                const emoji = chip.getAttribute('data-emoji') || '🥗';
+
+                if (selectedIngredients.some(item => item.name === name)) {
+                    // Remove
+                    selectedIngredients = selectedIngredients.filter(item => item.name !== name);
+                    chip.classList.remove('bg-brand-600', 'text-white', 'border-brand-500');
+                    chip.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+                } else {
+                    // Add
+                    selectedIngredients.push({ name, emoji });
+                    chip.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+                    chip.classList.add('bg-brand-600', 'text-white', 'border-brand-500');
+                }
+                updateSelectedUI();
+            });
+        });
+
+        // Add custom ingredient handler
+        document.getElementById('add-custom-btn').addEventListener('click', addCustomIngredient);
+        document.getElementById('custom-ingredient-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addCustomIngredient();
+            }
+        });
+
+        function addCustomIngredient() {
+            const input = document.getElementById('custom-ingredient-input');
+            const val = input.value.trim();
+            if (val) {
+                if (!selectedIngredients.some(item => item.name.toLowerCase() === val.toLowerCase())) {
+                    selectedIngredients.push({ name: val, emoji: '✨' });
+                    updateSelectedUI();
+                    showToast('Додано!', `Продукт "${val}" додано до вашого списку.`);
+                }
+                input.value = '';
+            }
+        }
+
+        // Clear all selected ingredients
+        document.getElementById('clear-ingredients').addEventListener('click', () => {
+            selectedIngredients = [];
+            allIngChips.forEach(chip => {
+                chip.classList.remove('bg-brand-600', 'text-white', 'border-brand-500');
+                chip.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+            });
+            updateSelectedUI();
+        });
+
+        // Update Selected UI Display
+        function updateSelectedUI() {
+            selectedCountEl.innerText = selectedIngredients.length;
+
+            if (selectedIngredients.length === 0) {
+                selectedChipsBox.innerHTML = 'Натисніть на продукти вище, щоб додати...';
+            } else {
+                selectedChipsBox.innerHTML = selectedIngredients.map(item => `
+                    <span class="inline-flex items-center gap-1 bg-brand-500/20 text-emerald-300 border border-brand-500/40 px-2.5 py-1 rounded-lg text-xs font-semibold">
+                        <span>${item.emoji} ${item.name}</span>
+                        <button onclick="removeIngredient('${item.name}')" class="ml-1 text-slate-400 hover:text-white">&times;</button>
+                    </span>
+                `).join('');
+            }
+        }
+
+        function removeIngredient(name) {
+            selectedIngredients = selectedIngredients.filter(item => item.name !== name);
+            // reset chip button if exists
+            allIngChips.forEach(chip => {
+                if (chip.getAttribute('data-name') === name) {
+                    chip.classList.remove('bg-brand-600', 'text-white', 'border-brand-500');
+                    chip.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
+                }
+            });
+            updateSelectedUI();
+        }
+
+        // GENERATE RECIPE LOGIC
+        const generateBtn = document.getElementById('generate-recipe-btn');
+        const placeholder = document.getElementById('recipe-placeholder');
+        const loading = document.getElementById('recipe-loading');
+        const content = document.getElementById('recipe-content');
+        const loadingStatusText = document.getElementById('loading-status-text');
+
+        generateBtn.addEventListener('click', () => {
+            if (selectedIngredients.length === 0) {
+                showToast('Увага', 'Будь ласка, оберіть хоча б 1 або 2 інгредієнти!');
+                return;
+            }
+
+            // Show Loading state
+            placeholder.classList.add('hidden');
+            content.classList.add('hidden');
+            loading.classList.remove('hidden');
+
+            const statusMessages = [
+                'Аналізуємо наявні продукти...',
+                'Шукаємо найкращі кулінарні поєднання...',
+                'Формуємо покрокову інструкцію приготування...'
+            ];
+
+            let step = 0;
+            const interval = setInterval(() => {
+                step++;
+                if (step < statusMessages.length) {
+                    loadingStatusText.innerText = statusMessages[step];
+                }
+            }, 500);
+
+            // Simulate AI delay
+            setTimeout(() => {
+                clearInterval(interval);
+                loading.classList.add('hidden');
+                content.classList.remove('hidden');
+
+                renderGeneratedRecipe();
+            }, 1600);
+        });
+
+        function renderGeneratedRecipe() {
+            const ingNames = selectedIngredients.map(i => i.name);
+
+            // Find best matching recipe from DB or generate dynamic fallback
+            let bestRecipe = null;
+            let maxMatches = -1;
+
+            recipeDatabase.forEach(r => {
+                const matches = r.required.filter(req => ingNames.some(ing => ing.toLowerCase().includes(req.toLowerCase()))).length;
+                if (matches > maxMatches) {
+                    maxMatches = matches;
+                    bestRecipe = r;
+                }
+            });
+
+            // If low match or custom items added, dynamically craft recipe
+            if (maxMatches === 0 || !bestRecipe) {
+                const firstTwo = ingNames.slice(0, 3).join(', ');
+                bestRecipe = {
+                    title: `Авторське соте "${firstTwo}"`,
+                    time: "18 хв",
+                    cals: "410 ккал",
+                    difficulty: "Легко",
+                    required: ingNames,
+                    steps: [
+                        `Розігрійте пательню із невеликою кількістю оливкової олії.`,
+                        `Подрібніть ${ingNames[0] || 'інгредієнти'} та злегка обсмажте 5-7 хвилин.`,
+                        `Додайте ${ingNames[1] || 'решту продуктів'}, приправте сіллю, перцем та тушкуйте під кришкою до готовності.`,
+                        `Подавайте гарячим як поживну та корисну страву!`
+                    ]
+                };
+            }
+
+            // Update UI with generated recipe data
+            document.getElementById('recipe-title').innerText = bestRecipe.title;
+            document.getElementById('recipe-time').innerText = bestRecipe.time;
+            document.getElementById('recipe-cals').innerText = bestRecipe.cals;
+            document.getElementById('recipe-diff').innerText = bestRecipe.difficulty;
+            document.getElementById('saved-count-tag').innerText = `${selectedIngredients.length} продуктів`;
+
+            // Used ingredients badges
+            const usedBox = document.getElementById('recipe-used-ing');
+            usedBox.innerHTML = selectedIngredients.map(item => `
+                <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs px-3 py-1 rounded-xl font-bold flex items-center gap-1">
+                    <span>${item.emoji}</span> ${item.name}
+                </span>
+            `).join('');
+
+            // Steps
+            const stepsOl = document.getElementById('recipe-steps');
+            stepsOl.innerHTML = bestRecipe.steps.map((stepText, idx) => `
+                <li class="flex items-start space-x-3 bg-slate-800/50 p-3 rounded-2xl border border-slate-700/60">
+                    <span class="w-6 h-6 rounded-full bg-brand-500/30 text-brand-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                        ${idx + 1}
+                    </span>
+                    <span>${stepText}</span>
+                </li>
+            `).join('');
+        }
+
+        // Newsletter Form Submit handler
+        document.getElementById('subscribe-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email-input').value;
+            if (email) {
+                showToast('Вітаємо!', 'Ваш email зареєстровано. Перевірте пошту для промокоду!');
+                document.getElementById('email-input').value = '';
+            }
+        });
+    </script>
+</body>
+</html>
